@@ -182,6 +182,8 @@ class data_field_file extends data_field_base {
 
         if (count($files)<2) {
             // no file
+            $content->content = null;
+            $DB->update_record('data_content', $content);
         } else {
             foreach ($files as $draftfile) {
                 if (!$draftfile->is_directory()) {
