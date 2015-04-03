@@ -215,14 +215,16 @@ class data_field_picture extends data_field_base {
         }
 
         $names = explode('_', $name);
+        $fs = get_file_storage();
         switch ($names[2]) {
             case 'file':
-                $fs = get_file_storage();
                 $fs->delete_area_files($this->context->id, 'mod_data', 'content', $content->id);
                 $usercontext = context_user::instance($USER->id);
                 $files = $fs->get_area_files($usercontext->id, 'user', 'draft', $value);
                 if (count($files)<2) {
                     // no file
+                    $content->content = null;
+                    $DB->update_record('data_content', $content);
                 } else {
                     $count = 0;
                     foreach ($files as $draftfile) {
@@ -256,6 +258,11 @@ class data_field_picture extends data_field_base {
 
             case 'alttext':
                 // only changing alt tag
+                if ($value && $fs->is_area_empty($this->context->id, 'mod_data',
+                        'content', $content->id)) {
+                    // There is no file, do not save the alt text.
+                    $value = null;
+                }
                 $content->content1 = clean_param($value, PARAM_NOTAGS);
                 $DB->update_record('data_content', $content);
                 break;
